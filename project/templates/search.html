@@ -1,0 +1,63 @@
+{% extends 'flatpages/default.html' %}
+
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}
+Products
+{% endblock title %}
+
+{% block content %}
+   <h1>Все публикации</h1>
+    <form action="" method="get">
+       {{ filterset.form.as_p }} Формат ввода даты: ГГГГ-ММ-ДД
+        <hr>
+       <input type="submit" value="Найти" />
+    </form>
+   <hr>
+   {% if posts %}
+       <table>
+           <tr>
+               <td>ID</td>
+               <td>Название</td>
+               <td>Текст</td>
+               <td>Категория</td>
+               <td>Количество страниц</td>
+               <td>Дата и время публикации</td>
+           </tr>
+           {% for post in posts.all %}
+           <tr>
+               <td><a href='http://127.0.0.1:8000/news/{{post.id}}'>{{ post.id }}</a></td>
+               <td>{{ post.name|censor }}</td>
+               <td>{{ post.text|censor|truncatechars:20 }}</td>
+               <td>{{ post.category.name }}</td>
+               <td>{{ post.amount_of_pages }}</td>
+               <td>{{ post.date|date:'d.M.Y' }} {{ post.date|time:'H:i' }}</td>
+           </tr>
+           {% endfor %}
+
+       </table>
+   {% else %}
+       <h2>Публикаций нет!</h2>
+   {% endif %}
+    {% if page_obj.has_previous %}
+       <a href="?{% url_replace page=1 %}">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {# Информация о текущей странице #}
+   {{ page_obj.number }}
+
+   {# Информация о следующих страницах #}
+   {% if page_obj.has_next %}
+       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+       {% endif %}
+   {% endif %}
+
+{% endblock content %}

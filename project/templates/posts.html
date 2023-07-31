@@ -1,0 +1,83 @@
+{% extends 'flatpages/default.html' %}
+
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}
+Posts
+{% endblock title %}
+
+{% block content %}
+   <h1>Все публикации</h1>
+<a href='http://127.0.0.1:8000/news/search'>Перейти к поиску?</a>
+{% if request.user.is_authenticated %}
+<a href='http://127.0.0.1:8000/accounts/logout'>Выйти</a>
+{% else %}
+<a href='http://127.0.0.1:8000/accounts/login'>Войти</a>
+<a href='http://127.0.0.1:8000/accounts/signup'>Зарегистрироваться</a>
+{% endif %}
+<hr>
+    {% if perms.simpleapp.add_news %}
+    <a href="{% url 'news_create' %}">Добавить статью</a>
+    {% endif %}
+   {% if posts %}
+       <table>
+           <tr>
+               <td>ID</td>
+               <td>Название</td>
+               <td>Текст</td>
+               <td>Категория</td>
+               <td>Количество страниц</td>
+               <td>Дата и время публикации</td>
+               {% if perms.simpleapp.change_news or perms.simpleapp.delete_news %}
+                <td>Действия</td>
+                {% endif %}
+           </tr>
+           {% for post in posts.all %}
+           <tr>
+               <td><a href='http://127.0.0.1:8000/news/{{post.id}}'>{{ post.id }}</a></td>
+               <td>{{ post.name|censor }}</td>
+               <td>{{ post.text|censor|truncatechars:20 }}</td>
+               <td>{{ post.category.name }}</td>
+               <td>{{ post.amount_of_pages }}</td>
+               <td>{{ post.date|date:'d.M.Y' }} {{ post.date|time:'H:i' }}</td>
+               <td>
+               {% if perms.simpleapp.change_news %}
+                    <a href="{% url 'news_update' pk=post.id %}">Изменить</a>
+               {% endif %}
+               {% if perms.simpleapp.delete_news %}
+                    <a href="{% url 'news_delete' post.id %}">Удалить</a>
+               {% endif %}
+               </td>
+           </tr>
+           {% endfor %}
+
+       </table>
+   {% else %}
+       <h2>Публикаций нет!</h2>
+   {% endif %}
+
+    {% if page_obj.has_previous %}
+       <a href="?{% url_replace page=1 %}">1</a>
+       {% if page_obj.previous_page_number != 1 %}
+           ...
+           <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+       {% endif %}
+   {% endif %}
+
+   {# Информация о текущей странице #}
+   {{ page_obj.number }}
+
+   {# Информация о следующих страницах #}
+   {% if page_obj.has_next %}
+       <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+       {% if paginator.num_pages != page_obj.next_page_number %}
+           ...
+           <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+       {% endif %}
+   {% endif %}
+<hr>
+{% if request.user.is_authenticated %}
+<a href='http://127.0.0.1:8000/news/subscriptions/'>Перейти к подпискам</a>
+{% endif %}
+{% endblock content %}
